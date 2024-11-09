@@ -11,19 +11,17 @@ function get_sitemap_urls($url) {
     if (substr($url, -11) !== 'sitemap.xml') {
         $url = rtrim($url, '/') . '/sitemap.xml';
     }
-
-    // Intentar obtener el contenido del sitemap
-    $sitemap_content = @file_get_contents($url);
+    // Para intentar obtener el contenido del sitemap
+    $sitemap_content = @file_get_contents($url); // Utiliza @ para suprimir errores de file_get_contents
     if ($sitemap_content === false) {
         return ['Error: No se pudo obtener el contenido del sitemap.'];
     }
-
     $sitemap_xml = simplexml_load_string($sitemap_content);
     if ($sitemap_xml === false) {
         return ['Error: XML no válido.'];
     }
 
-    // Extraer las URLs del sitemap
+    //Extraemos las URLs del sitemap
     $urls = [];
     foreach ($sitemap_xml->url as $url_entry) {
         $urls[] = (string) $url_entry->loc;
@@ -32,6 +30,36 @@ function get_sitemap_urls($url) {
         $urls[] = 'Debug: No URLs found in sitemap.';
     }
     return $urls;
+}
+
+// Función para obtener los metadatos de una página
+function get_page_metadata($url) {
+    $html = @file_get_contents($url);
+    if ($html === false) {
+        return [
+            'title' => 'Error: No se pudo obtener el contenido de la página.',
+          //  'h1' => '',
+            'description' => ''
+        ];
+    }
+
+    // Obtener título
+    preg_match('/<title>(.*?)<\/title>/', $html, $title_match);
+    $title = $title_match[1] ?? 'Sin título';
+
+    // Obtener H1
+    ///preg_match('/<h1>(.*?)<\/h1>/', $html, $h1_match);
+   // $h1 = $h1_match[1] ?? 'Sin H1';
+
+    // Obtener meta description
+    preg_match('/<meta name="description" content="(.*?)"/', $html, $description_match);
+    $description = $description_match[1] ?? 'Sin descripción';
+
+    return [
+        'title' => $title,
+      // 'h1' => $h1,
+        'description' => $description
+    ];
 }
 
 // Función para renderizar el formulario y procesar la entrada
@@ -50,15 +78,21 @@ function render_form_shortcode() {
         if (!empty($urls)) {
             echo '<ul>';
             foreach ($urls as $url) {
-                if (strpos($url, 'Error:') === 0 || strpos($url, 'Debug:') === 0) {
-                    echo '<li>' . esc_html($url) . '</li>';
-                } else {
-                    echo '<li>' . esc_url($url) . '</li>';
-                }
+                echo '<li>' . esc_url($url) . '</li>';
+                $metadata = get_page_metadata($url);
+                echo '<ul>';
+                echo '<li><strong>Título:</strong> ' . esc_html($metadata['title']) . '</li>';
+               // echo '<li><strong>H1:</strong> ' . esc_html($metadata['h1']) . '</li>';
+                echo '<li><strong>Descripción:</strong> ' . esc_html($metadata['description']) . '</li>';
+                echo '</ul>';
             }
             echo '</ul>';
         } else {
-            echo '<p>No se encontraron URLs en el sitemap.</p>';
+            if (isset($urls[0]) && strpos($urls[0], 'Error:') !== false) {
+                echo '<p>' . esc_html($urls[0]) . '</p>';
+            } else {
+                echo '<p>No se encontraron URLs en el sitemap.</p>';
+            }
         }
     }
     return ob_get_clean();
@@ -67,4 +101,3 @@ function render_form_shortcode() {
 // Registrar el shortcode [formulario_url]
 add_shortcode('formulario_url', 'render_form_shortcode');
 ?>
-
