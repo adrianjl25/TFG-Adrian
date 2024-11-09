@@ -62,6 +62,22 @@ function get_page_metadata($url) {
     ];
 }
 
+// Funcion para extraer palabras clave de las URLs
+function extract_keywords($metadata) {
+    $content = implode(' ', $metadata); // Unir título, h1 y descripción
+    $words = str_word_count(strtolower($content), 1); // Convertir todo a minúsculas y separar por palabras
+    $frequencies = array_count_values($words); // Contar frecuencias de cada palabra
+
+    // Excluir palabras comunes
+    $stopwords = ['de', 'la', 'y', 'el', 'en', 'los']; // Puedes expandir esta lista
+    $keywords = array_diff_key($frequencies, array_flip($stopwords));
+
+    // Devolver las palabras más frecuentes
+    arsort($keywords);
+    return array_slice($keywords, 0, 5, true); // Por ejemplo, devolver las 5 palabras más frecuentes
+}
+
+
 // Función para renderizar el formulario y procesar la entrada
 function render_form_shortcode() {
     ob_start(); ?>
@@ -84,6 +100,8 @@ function render_form_shortcode() {
                 echo '<li><strong>Título:</strong> ' . esc_html($metadata['title']) . '</li>';
                // echo '<li><strong>H1:</strong> ' . esc_html($metadata['h1']) . '</li>';
                 echo '<li><strong>Descripción:</strong> ' . esc_html($metadata['description']) . '</li>';
+                $keywords = extract_keywords($metadata);
+                echo '<li><strong>Palabras clave:</strong> ' . implode(', ', array_keys($keywords)) . '</li>';
                 echo '</ul>';
             }
             echo '</ul>';
