@@ -65,9 +65,11 @@ function get_page_metadata($url) {
 // Funcion para extraer palabras clave de las URLs
 function extract_keywords($metadata, $min_length = 2) {
     $content = implode(' ', $metadata); // Unir título, h1 y descripción
-    $words = str_word_count(strtolower($content), 1); // Convertir todo a minúsculas y separar por palabras
+    //Para que detecte letras con tildes y caracteres especiales
+    $content = mb_strtolower($content, 'UTF-8'); //Convertir a minúsculas
+    $words = preg_split('/\PL+/u', $content, -1, PREG_SPLIT_NO_EMPTY); // Separar por palabras, considerando caracteres Unicode
     $words = array_filter($words, function($word) use ($min_length) {   //Hacemos que las palabras clave tengan que tener un mínimo de 2 letras
-        return strlen($word) > $min_length;
+        return mb_strlen($word, 'UTF-8') >= $min_length;
     });
     $frequencies = array_count_values($words); // Contar frecuencias de cada palabra
 
