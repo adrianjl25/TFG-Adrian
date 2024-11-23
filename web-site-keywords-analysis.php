@@ -63,9 +63,12 @@ function get_page_metadata($url) {
 }
 
 // Funcion para extraer palabras clave de las URLs
-function extract_keywords($metadata) {
+function extract_keywords($metadata, $min_length = 2) {
     $content = implode(' ', $metadata); // Unir título, h1 y descripción
     $words = str_word_count(strtolower($content), 1); // Convertir todo a minúsculas y separar por palabras
+    $words = array_filter($words, function($word) use ($min_length) {   //Hacemos que las palabras clave tengan que tener un mínimo de 2 letras
+        return strlen($word) > $min_length;
+    });
     $frequencies = array_count_values($words); // Contar frecuencias de cada palabra
 
     // Excluir palabras comunes
@@ -92,6 +95,7 @@ function render_form_shortcode() {
         echo "<p>Hola, has introducido la URL: " . esc_url($url) . "</p>";
         $urls = get_sitemap_urls($url);
         if (!empty($urls)) {
+            $url_keywords = [];
             echo '<ul>';
             foreach ($urls as $url) {
                 echo '<li>' . esc_url($url) . '</li>';
@@ -103,8 +107,13 @@ function render_form_shortcode() {
                 $keywords = extract_keywords($metadata);
                 echo '<li><strong>Palabras clave:</strong> ' . implode(', ', array_keys($keywords)) . '</li>';
                 echo '</ul>';
+                $url_keywords[$url] = array_keys($keywords);
             }
             echo '</ul>';
+            //Mostramos el array de palabras clave
+            echo '<pre>';
+            print_r($url_keywords);
+            echo '</pre>';
         } else {
             if (isset($urls[0]) && strpos($urls[0], 'Error:') !== false) {
                 echo '<p>' . esc_html($urls[0]) . '</p>';
