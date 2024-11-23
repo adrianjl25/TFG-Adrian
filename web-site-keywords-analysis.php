@@ -82,6 +82,22 @@ function extract_keywords($metadata, $min_length = 2) {
     return array_slice($keywords, 0, 5, true); // Por ejemplo, devolver las 5 palabras más frecuentes
 }
 
+function analyze_keyword_similarity($url_keywords)
+{
+    $keyword_count = [];
+
+    foreach ($url_keywords as $keywords) {
+        foreach ($keywords as $keyword) {
+            if (!isset($keyword_count[$keyword])) {
+                $keyword_count[$keyword] = 0;
+            }
+            $keyword_count[$keyword]++;
+        }
+    }
+    //Para ordenar la lista de palabras clave de mayor a menor
+    arsort($keyword_count);
+    return $keyword_count;
+}
 
 // Función para renderizar el formulario y procesar la entrada
 function render_form_shortcode() {
@@ -116,6 +132,15 @@ function render_form_shortcode() {
             echo '<pre>';
             print_r($url_keywords);
             echo '</pre>';
+
+            //Analizamos la similitud de las palabras clave
+            $keyword_similarity = analyze_keyword_similarity($url_keywords);
+            echo '<h3>Similitud de palabras clave:</h3>';
+            echo '<ul>';
+            foreach ($keyword_similarity as $keyword => $count) {
+                echo '<li><strong>' . esc_html($keyword) . ':</strong> ' . $count . '</li>';
+            }
+            echo '</ul>';
         } else {
             if (isset($urls[0]) && strpos($urls[0], 'Error:') !== false) {
                 echo '<p>' . esc_html($urls[0]) . '</p>';
