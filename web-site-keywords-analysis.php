@@ -63,7 +63,7 @@ function get_page_metadata($url) {
 }
 
 // Funcion para extraer palabras clave de las URLs
-function extract_keywords($metadata, $min_length = 2) {
+function extract_keywords($metadata, $min_length = 3) {
     $content = implode(' ', $metadata); // Unir título, h1 y descripción
     //Para que detecte letras con tildes y caracteres especiales
     $content = mb_strtolower($content, 'UTF-8'); //Convertir a minúsculas
@@ -96,7 +96,7 @@ function analyze_keyword_similarity($url_keywords)
     }
     //Para ordenar la lista de palabras clave de mayor a menor
     arsort($keyword_count);
-    return $keyword_count;
+    return array_slice($keyword_count, 0, 10, true);
 }
 
 // Función para renderizar el formulario y procesar la entrada
@@ -107,6 +107,7 @@ function render_form_shortcode() {
         <input type="url" id="url-input" name="url-input" required><br><br>
         <input type="submit" name="submit-url" value="Enviar">
     </form>
+    <div id="venn"></div> <!-- Añadir un contenedor para el diagrama de Venn -->
     <?php
     if (isset($_POST['submit-url'])) {
         $url = sanitize_text_field($_POST['url-input']);
@@ -141,6 +142,52 @@ function render_form_shortcode() {
                 echo '<li><strong>' . esc_html($keyword) . ':</strong> ' . $count . '</li>';
             }
             echo '</ul>';
+            // Convertir los datos para el diagrama de Venn
+            $venn_data = [];
+            $keyword_sets = [];
+            foreach ($url_keywords as $url => $keywords) {
+                foreach ($keywords as $keyword) {
+                    if (isset($keyword_similarity[$keyword])) { //Solo considera las 10 palabras que más se repiten
+                        if (!isset($venn_data[$keyword])) {
+                            $venn_data[$keyword] = ['sets' => [$keyword], 'size' => 1];
+                        } else {
+                            $venn_data[$keyword]['size'] += 1;
+                        }
+                        $keyword_sets[$url][] = $keyword;
+                    }
+                }
+            }
+
+            // Añadir intersecciones reales según los datos
+                        foreach ($keyword_sets as $keywords) {
+                            foreach (array_unique($keywords) as $keyword) {
+                                foreach (array_unique($keywords) as $inner_keyword) {
+                                    if ($keyword !== $inner_keyword) {
+                                        $intersection_size = 0;
+                                        foreach ($url_keywords as $key => $values) {
+                                            if (in_array($keyword, $values) && in_array($inner_keyword, $values)) {
+                                                $intersection_size++;
+                                            }
+                                        }
+                                        if ($intersection_size > 0) {
+                                            $venn_data[] = [
+                                                'sets' => [$keyword, $inner_keyword],
+                                                'size' => $intersection_size
+                                            ];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        echo '<script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var vennData = ' . json_encode(array_values($venn_data)) . ';
+                var chart = venn.VennDiagram();
+                d3.select("#venn").datum(vennData).call(chart);
+            });
+            </script>';
+
         } else {
             if (isset($urls[0]) && strpos($urls[0], 'Error:') !== false) {
                 echo '<p>' . esc_html($urls[0]) . '</p>';
