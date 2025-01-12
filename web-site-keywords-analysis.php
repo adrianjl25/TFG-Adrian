@@ -5,6 +5,9 @@ Version: 1.0
 Author: Lux GPT
 */
 
+
+require('lib/fpdf.php');
+
 // Función para obtener las URLs del sitemap
 function get_sitemap_urls($url) {
     // Asegurarse de que la URL termina correctamente
@@ -79,7 +82,7 @@ function extract_keywords($metadata, $min_length = 3) {
 
     // Devolver las palabras más frecuentes
     arsort($keywords);
-    return array_slice($keywords, 0, 5, true); // Por ejemplo, devolver las 5 palabras más frecuentes
+    return array_slice($keywords, 0, 5, true); // Devolver las 5 palabras más frecuentes
 }
 
 function analyze_keyword_similarity($url_keywords)
@@ -97,6 +100,30 @@ function analyze_keyword_similarity($url_keywords)
     //Para ordenar la lista de palabras clave de mayor a menor
     arsort($keyword_count);
     return array_slice($keyword_count, 0, 10, true);
+}
+
+// Función para generar y descargar el PDF
+function generate_pdf($url_keywords, $keyword_similarity) {
+    $pdf = new FPDF();
+    $pdf->AddPage();
+    $pdf->SetFont('Arial', 'B', 16);
+
+    $pdf->Cell(0, 10, 'Resultados de Analisis de Similitud de Palabras Clave', 0, 1, 'C');
+
+    $pdf->SetFont('Arial', '', 12);
+    foreach ($url_keywords as $url => $keywords) {
+        $pdf->Cell(0, 10, 'URL: ' . $url, 0, 1);
+        $pdf->Cell(0, 10, 'Palabras Clave: ' . implode(', ', $keywords), 0, 1);
+    }
+
+    $pdf->SetFont('Arial', 'B', 12);
+    $pdf->Cell(0, 10, 'Similitud de Palabras Clave', 0, 1);
+    $pdf->SetFont('Arial', '', 12);
+    foreach ($keyword_similarity as $keyword => $count) {
+        $pdf->Cell(0, 10, $keyword . ': ' . $count, 0, 1);
+    }
+
+    $pdf->Output('D', 'analisis_similitud_palabras_clave.pdf');
 }
 
 // Función para renderizar el formulario y procesar la entrada
@@ -129,10 +156,7 @@ function render_form_shortcode() {
                 $url_keywords[$url] = array_keys($keywords);
             }
             echo '</ul>';
-            //Mostramos el array de palabras clave
-            echo '<pre>';
-            print_r($url_keywords);
-            echo '</pre>';
+
 
             //Analizamos la similitud de las palabras clave
             $keyword_similarity = analyze_keyword_similarity($url_keywords);
@@ -142,6 +166,15 @@ function render_form_shortcode() {
                 echo '<li><strong>' . esc_html($keyword) . ':</strong> ' . $count . '</li>';
             }
             echo '</ul>';
+
+            // Añadimos el botón para descargar el PDF
+            echo '<form method="post">';
+            echo '<input type="hidden" name="url_keywords" value="' . esc_attr(json_encode($url_keywords)) . '">';
+            echo '<input type="hidden" name="keyword_similarity" value="' . esc_attr(json_encode($keyword_similarity)) . '">';
+            echo '<input type="submit" name="download_pdf" value="Descargar PDF">';
+            echo '</form>';
+
+
             // Convertir los datos para el diagrama de Venn
             $venn_data = [];
             $keyword_sets = [];
@@ -196,6 +229,7 @@ function render_form_shortcode() {
             }
         }
     }
+
     return ob_get_clean();
 }
 
