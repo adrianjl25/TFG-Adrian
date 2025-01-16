@@ -1,0 +1,1 @@
+// Funcionalidad javascript del plugin
