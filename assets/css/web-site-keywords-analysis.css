@@ -1,0 +1,73 @@
+/* Estilo para el buscador */
+#url-input {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 20px;
+    border-radius: 25px;
+    border: 1px solid #ccc;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    font-size: 16px;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+#url-input:focus {
+    border-color: #6200ee;
+    box-shadow: 0 0 5px rgba(98, 0, 238, 0.5);
+    outline: none;
+}
+
+/* Estilo para el botón */
+#submit-url {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 25px;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+    color: #333;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#submit-url:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+#submit-url:active {
+    background-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* Estilo para el botón */
+#download_pdf {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 25px;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+    color: #333;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#download_pdf:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+#download_pdf:active {
+    background-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
